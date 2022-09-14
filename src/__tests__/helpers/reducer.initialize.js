@@ -666,6 +666,54 @@ const describeInitialize = (reducer, expect, { fromJS }) => () => {
       }
     })
   })
+
+  it('should update pristine values at nested levels, and leave dirty values alone, even when updateUnregisteredFields is true', () => {
+    const newInitial = {
+      nest: {
+        oldField: 'oldValue',
+        newField: 'newValue1'
+      }
+    }
+
+    const registeredFields = {
+      'nest.oldField': { name: 'nest.oldField', type: 'Field', count: 1 },
+      'nest.newField': { name: 'nest.newField', type: 'Field', count: 1 }
+    }
+
+    const state = reducer(
+      fromJS({
+        foo: {
+          registeredFields,
+          values: {
+            nest: {
+              oldField: 'oldValue1',
+              newField: 'newValue'
+            }
+          },
+          initial: {
+            nest: {
+              oldField: 'oldValue',
+              newField: 'newValue'
+            }
+          }
+        }
+      }),
+      initialize('foo', newInitial, true, { updateUnregisteredFields: true })
+    )
+
+    expect(state).toEqualMap({
+      foo: {
+        registeredFields,
+        values: {
+          nest: {
+            oldField: 'oldValue1',
+            newField: 'newValue1'
+          }
+        },
+        initial: newInitial
+      }
+    })
+  })
 }
 
 export default describeInitialize
