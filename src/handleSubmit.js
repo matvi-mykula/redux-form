@@ -123,14 +123,15 @@ const handleSubmit = (
     syncErrors,
     asyncErrors,
     touch,
-    persistentSubmitErrors
+    persistentSubmitErrors,
+    alwaysRevalidateOnSubmit
   } = props
 
   fields = makeFieldsArray(fields)
 
   touch(...fields) // mark all fields as touched
 
-  if (valid || persistentSubmitErrors) {
+  if (valid || persistentSubmitErrors || alwaysRevalidateOnSubmit) {
     const asyncValidateResult = asyncValidate && asyncValidate()
     if (asyncValidateResult) {
       return asyncValidateResult

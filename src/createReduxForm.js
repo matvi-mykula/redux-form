@@ -205,7 +205,9 @@ type OptionalConfig = {
   onSubmitSuccess?: OnSubmitSuccess,
   propNamespace?: string,
   validate?: ValidateFunction,
-  warn?: ValidateFunction
+  warn?: ValidateFunction,
+  // custom
+  alwaysRevalidateOnSubmit?: boolean
 }
 
 // the options that users pass in to the @reduxForm decorator, or other decorators created with createReduxForm()
