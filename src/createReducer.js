@@ -366,6 +366,11 @@ function createReducer<M, L>(structure: Structure<M, L>) {
           // initialize action causes the field to become pristine. That effect
           // is what we want.
           //
+
+          /**
+           *
+           * If the 'name' field is pristine (not dirty) overwrite it with the new newInitialValues value
+           */
           const overwritePristineValue = name => {
             const previousInitialValue = getIn(previousInitialValues, name)
             const previousValue = getIn(previousValues, name)
@@ -391,9 +396,17 @@ function createReducer<M, L>(structure: Structure<M, L>) {
           forEach(keys(newInitialValues), name => {
             const previousInitialValue = getIn(previousInitialValues, name)
             if (typeof previousInitialValue === 'undefined') {
-              // Add new values at the root level.
+              // Add new values at the root level, but don't stomp dirty fields
+              // with undefined "new" initial values.
               const newInitialValue = getIn(newInitialValues, name)
-              newValues = setIn(newValues, name, newInitialValue)
+              const previousValue = getIn(previousValues, name)
+
+              if (
+                typeof newInitialValue !== 'undefined' ||
+                deepEqual(previousValue, previousInitialValue)
+              ) {
+                newValues = setIn(newValues, name, newInitialValue)
+              }
             }
 
             if (updateUnregisteredFields) {

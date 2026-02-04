@@ -554,6 +554,45 @@ const describeInitialize = (reducer, expect, { fromJS }) => () => {
     })
   })
 
+  it('should not overwrite dirty values with undefined new initial values when keepDirty is set', () => {
+    const newInitial = {
+      oldField: 'oldValue',
+      newField: undefined
+    }
+
+    const registeredFields = {
+      oldField: { name: 'oldField', type: 'Field', count: 1 },
+      newField: { name: 'newField', type: 'Field', count: 1 }
+    }
+
+    const state = reducer(
+      fromJS({
+        foo: {
+          registeredFields,
+          values: {
+            oldField: 'oldValue',
+            newField: 'dirtyValue'
+          },
+          initial: {
+            oldField: 'oldValue'
+          }
+        }
+      }),
+      initialize('foo', newInitial, true)
+    )
+
+    expect(state).toEqualMap({
+      foo: {
+        registeredFields,
+        values: {
+          oldField: 'oldValue',
+          newField: 'dirtyValue'
+        },
+        initial: newInitial
+      }
+    })
+  })
+
   it('should add new pristine values at nested levels', () => {
     const newInitial = {
       group: {
