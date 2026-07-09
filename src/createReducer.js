@@ -215,7 +215,13 @@ function createReducer<M, L>(structure: Structure<M, L>) {
       const initial = getIn(result, `initial.${field}`)
       if (initial === undefined && payload === '') {
         result = deleteInWithCleanUp(result, `values.${field}`)
-      } else if (payload !== undefined) {
+      } else if (
+        payload !== undefined &&
+        !deepEqual(getIn(result, `values.${field}`), payload)
+      ) {
+        // only write the value if it actually changed, so that unchanged values keep
+        // their reference identity and selectors subscribed to `values` don't recompute
+        // (widgets commonly dispatch CHANGE followed by BLUR carrying the same value)
         result = setIn(result, `values.${field}`, payload)
       }
       if (field === getIn(result, 'active')) {
@@ -238,12 +244,12 @@ function createReducer<M, L>(structure: Structure<M, L>) {
         result = deleteInWithCleanUp(result, `values.${field}`)
       } else if (isFunction(payload)) {
         const fieldCurrentValue = getIn(state, `values.${field}`)
-        result = setIn(
-          result,
-          `values.${field}`,
-          payload(fieldCurrentValue, state.values)
-        )
-      } else {
+        const fieldNextValue = payload(fieldCurrentValue, state.values)
+        if (!deepEqual(fieldCurrentValue, fieldNextValue)) {
+          result = setIn(result, `values.${field}`, fieldNextValue)
+        }
+      } else if (!deepEqual(getIn(result, `values.${field}`), payload)) {
+        // same unchanged-value guard as in BLUR above
         result = setIn(result, `values.${field}`, payload)
       }
       result = deleteInWithCleanUp(result, `asyncErrors.${field}`)

@@ -1,7 +1,7 @@
 import actions from '../../actions'
 const { blur } = actions
 
-const describeBlur = (reducer, expect, { fromJS, setIn }) => () => {
+const describeBlur = (reducer, expect, { fromJS, setIn, getIn }) => () => {
   it('should set value on blur with empty state', () => {
     const state = reducer(undefined, blur('foo', 'myField', 'myValue'))
     expect(state).toEqualMap({
@@ -404,6 +404,55 @@ const describeBlur = (reducer, expect, { fromJS, setIn }) => () => {
         active: 'myField'
       }
     })
+  })
+
+  it('should keep values reference identity on blur with an unchanged value, but still touch', () => {
+    const initialState = fromJS({
+      foo: {
+        values: {
+          myField: 'myValue'
+        },
+        initial: {
+          myField: 'initialValue'
+        }
+      }
+    })
+    const state = reducer(initialState, blur('foo', 'myField', 'myValue', true))
+    expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
+    expect(state).toEqualMap({
+      foo: {
+        anyTouched: true,
+        values: {
+          myField: 'myValue'
+        },
+        initial: {
+          myField: 'initialValue'
+        },
+        fields: {
+          myField: {
+            touched: true
+          }
+        }
+      }
+    })
+  })
+
+  it('should keep values reference identity on blur with a deep-equal (but not reference-equal) value', () => {
+    const initialState = fromJS({
+      foo: {
+        values: {
+          myObjectField: { mySubField: ['a', 'b'] }
+        },
+        initial: {
+          myObjectField: { mySubField: ['x'] }
+        }
+      }
+    })
+    const state = reducer(
+      initialState,
+      blur('foo', 'myObjectField', fromJS({ mySubField: ['a', 'b'] }), true)
+    )
+    expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
   })
 
   it('should NOT destroy an empty array field object on blur', () => {

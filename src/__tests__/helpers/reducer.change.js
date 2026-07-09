@@ -1,7 +1,7 @@
 import actions from '../../actions'
 const { change } = actions
 
-const describeChange = (reducer, expect, { fromJS }) => () => {
+const describeChange = (reducer, expect, { fromJS, getIn }) => () => {
   it('should set value on change with empty state', () => {
     const state = reducer(undefined, change('foo', 'myField', 'myValue'))
     expect(state).toEqualMap({
@@ -293,6 +293,57 @@ const describeChange = (reducer, expect, { fromJS }) => () => {
         error: 'some global error'
       }
     })
+  })
+
+  it('should keep values reference identity on change with an unchanged value', () => {
+    const initialState = fromJS({
+      foo: {
+        values: {
+          myField: 'myValue'
+        },
+        initial: {
+          myField: 'initialValue'
+        }
+      }
+    })
+    const state = reducer(initialState, change('foo', 'myField', 'myValue'))
+    expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
+  })
+
+  it('should keep values reference identity on change with a deep-equal (but not reference-equal) value', () => {
+    const initialState = fromJS({
+      foo: {
+        values: {
+          myObjectField: { mySubField: ['a', 'b'] }
+        },
+        initial: {
+          myObjectField: { mySubField: ['x'] }
+        }
+      }
+    })
+    const state = reducer(
+      initialState,
+      change('foo', 'myObjectField', fromJS({ mySubField: ['a', 'b'] }))
+    )
+    expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
+  })
+
+  it('should keep values reference identity on change when a function payload returns the current value', () => {
+    const initialState = fromJS({
+      foo: {
+        values: {
+          myField: 'myValue'
+        },
+        initial: {
+          myField: 'initialValue'
+        }
+      }
+    })
+    const state = reducer(
+      initialState,
+      change('foo', 'myField', () => 'myValue')
+    )
+    expect(getIn(state, 'foo.values')).toBe(getIn(initialState, 'foo.values'))
   })
 
   it('should set nested value on change with empty state', () => {
