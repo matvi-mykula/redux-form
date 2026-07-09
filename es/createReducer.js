@@ -283,7 +283,13 @@ function createReducer(structure) {
 
       if (initial === undefined && payload === '') {
         result = deleteInWithCleanUp(result, 'values.' + field)
-      } else if (payload !== undefined) {
+      } else if (
+        payload !== undefined &&
+        !deepEqual(getIn(result, 'values.' + field), payload)
+      ) {
+        // only write the value if it actually changed, so that unchanged values keep
+        // their reference identity and selectors subscribed to `values` don't recompute
+        // (widgets commonly dispatch CHANGE followed by BLUR carrying the same value)
         result = setIn(result, 'values.' + field, payload)
       }
 
@@ -313,12 +319,13 @@ function createReducer(structure) {
         result = deleteInWithCleanUp(result, 'values.' + field)
       } else if (_isFunction(payload)) {
         var fieldCurrentValue = getIn(state, 'values.' + field)
-        result = setIn(
-          result,
-          'values.' + field,
-          payload(fieldCurrentValue, state.values)
-        )
-      } else {
+        var fieldNextValue = payload(fieldCurrentValue, state.values)
+
+        if (!deepEqual(fieldCurrentValue, fieldNextValue)) {
+          result = setIn(result, 'values.' + field, fieldNextValue)
+        }
+      } else if (!deepEqual(getIn(result, 'values.' + field), payload)) {
+        // same unchanged-value guard as in BLUR above
         result = setIn(result, 'values.' + field, payload)
       }
 
