@@ -1,7 +1,7 @@
 // @flow
 import { Map, Iterable, List, fromJS } from 'immutable'
 import { toPath } from 'lodash'
-import deepEqual from './deepEqual'
+import deepEqual, { deepEqualStrict } from './deepEqual'
 import keys from './keys'
 import setIn from './setIn'
 import splice from './splice'
@@ -21,6 +21,7 @@ const structure: Structure<ImmutableMap<string, *>, ImmutableList<*>> = {
       : plainGetIn(state, field),
   setIn,
   deepEqual,
+  deepEqualStrict,
   deleteIn: (
     state: ImmutableMap<string, *> | ImmutableList<*>,
     field: string

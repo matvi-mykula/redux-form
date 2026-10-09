@@ -484,6 +484,42 @@ const describeBlur = (reducer, expect, { fromJS, setIn, getIn }) => () => {
       }
     })
   })
+
+  it('should write null over a missing value on blur', () => {
+    const state = reducer(
+      fromJS({ foo: { values: {}, initial: {} } }),
+      blur('foo', 'myField', null, true)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write null over an empty string on blur', () => {
+    const state = reducer(
+      fromJS({
+        foo: { values: { myField: '' }, initial: { myField: 'initialValue' } }
+      }),
+      blur('foo', 'myField', null, true)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write an empty string over null on blur when the field has an initial value', () => {
+    const state = reducer(
+      fromJS({
+        foo: { values: { myField: null }, initial: { myField: 'initialValue' } }
+      }),
+      blur('foo', 'myField', '', true)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe('')
+  })
+
+  it('should write false over 0 on blur', () => {
+    const state = reducer(
+      fromJS({ foo: { values: { myField: 0 }, initial: { myField: 1 } } }),
+      blur('foo', 'myField', false, true)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(false)
+  })
 }
 
 export default describeBlur

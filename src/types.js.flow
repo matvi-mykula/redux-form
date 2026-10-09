@@ -22,6 +22,7 @@ export interface Structure<M, L> {
   getIn(state: any, field: string): any;
   setIn(state: any, field: string, value: any): any;
   deepEqual(a: any, b: any): boolean;
+  deepEqualStrict(a: any, b: any): boolean;
   deleteIn(state: any, field: string): any;
   forEach(list: L, callback: { (item: any, index: number): void }): void;
   fromJS(value: any): any;

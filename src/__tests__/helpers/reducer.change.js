@@ -361,6 +361,46 @@ const describeChange = (reducer, expect, { fromJS, getIn }) => () => {
       }
     })
   })
+
+  it('should write null over a missing value on change', () => {
+    const state = reducer(
+      fromJS({ foo: { values: {}, initial: {} } }),
+      change('foo', 'myField', null)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write null over an empty string on change', () => {
+    const state = reducer(
+      fromJS({
+        foo: { values: { myField: '' }, initial: { myField: 'initialValue' } }
+      }),
+      change('foo', 'myField', null)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write null over a missing value when a function payload returns null', () => {
+    const state = reducer(
+      fromJS({ foo: { values: {}, initial: {} } }),
+      change('foo', 'myField', () => null)
+    )
+    expect(getIn(state, 'foo.values.myField')).toBe(null)
+  })
+
+  it('should write a nested null that replaces undefined on change', () => {
+    const initialState = fromJS({
+      foo: { values: { myObject: { a: undefined, b: 1 } }, initial: {} }
+    })
+    const state = reducer(
+      initialState,
+      change('foo', 'myObject', fromJS({ a: null, b: 1 }))
+    )
+    expect(getIn(state, 'foo.values')).not.toBe(
+      getIn(initialState, 'foo.values')
+    )
+    expect(getIn(state, 'foo.values.myObject.a')).toBe(null)
+  })
 }
 
 export default describeChange

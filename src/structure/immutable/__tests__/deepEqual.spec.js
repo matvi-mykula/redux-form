@@ -1,5 +1,5 @@
 import { fromJS, List } from 'immutable'
-import deepEqual from '../deepEqual'
+import deepEqual, { deepEqualStrict } from '../deepEqual'
 
 describe('structure.immutable.deepEqual', () => {
   const testBothWays = (a, b, expectation) => {
@@ -394,6 +394,40 @@ describe('structure.immutable.deepEqual', () => {
         }
       }),
       false
+    )
+  })
+})
+
+describe('structure.immutable.deepEqualStrict', () => {
+  const testBothWays = (a, b, expectation) => {
+    expect(deepEqualStrict(a, b)).toBe(expectation)
+    expect(deepEqualStrict(b, a)).toBe(expectation)
+  }
+
+  it('should keep undefined, null and empty string apart', () => {
+    testBothWays(undefined, null, false)
+    testBothWays(null, '', false)
+    testBothWays(undefined, '', false)
+  })
+
+  it('should keep 0 and false apart', () => {
+    testBothWays(0, false, false)
+  })
+
+  it('should treat NaN as equal to NaN', () => {
+    testBothWays(NaN, NaN, true)
+  })
+
+  it('should keep nested empty values apart', () => {
+    testBothWays(fromJS({ a: null }), fromJS({ a: undefined }), false)
+    testBothWays(List([null]), List(['']), false)
+  })
+
+  it('should treat deep-equal values as equal', () => {
+    testBothWays(
+      fromJS({ a: { b: [1, 'x', null] } }),
+      fromJS({ a: { b: [1, 'x', null] } }),
+      true
     )
   })
 })

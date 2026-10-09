@@ -2,7 +2,7 @@
 import splice from './splice'
 import getIn from './getIn'
 import setIn from './setIn'
-import deepEqual from './deepEqual'
+import deepEqual, { deepEqualStrict } from './deepEqual'
 import deleteIn from './deleteIn'
 import keys from './keys'
 import type { Structure } from '../../types'
@@ -14,6 +14,7 @@ const structure: Structure<Object, Array<*>> = {
   getIn,
   setIn,
   deepEqual,
+  deepEqualStrict,
   deleteIn,
   forEach: (items, callback) => items.forEach(callback),
   fromJS: value => value,
